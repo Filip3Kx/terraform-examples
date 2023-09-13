@@ -11,4 +11,4 @@ $Env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\fkubawsx\OneDrive - Intel Corporat
 ## Files in the repo
 - [basic.tf](https://github.com/Filip3Kx/terraform-examples/blob/main/basic.tf)
   - remote backend on gcs
-  - one ubuntu vm that saves "Hello world" to a file
+  - one ubuntu vm that has docker installed
