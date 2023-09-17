@@ -30,6 +30,7 @@ resource "google_compute_instance" "http1-vm" {
     }
     network_interface {
         network = google_compute_network.http-network.name
+        access_config = {}
     }
     metadata_startup_script = <<-EOF
         sudo apt update -y
@@ -51,6 +52,7 @@ resource "google_compute_instance" "http2-vm" {
     }
     network_interface {
         network = google_compute_network.http-network.name
+        access_config = {}
     }
     metadata_startup_script = <<-EOF
         sudo apt update -y
