@@ -1,4 +1,3 @@
-# $Env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\fkubawsx\OneDrive - Intel Corporation\terraform-examples\key.json"
 terraform {
     backend "gcs" {
         bucket  = "tf-state-bucket115"
