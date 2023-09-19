@@ -6,19 +6,44 @@ provider "google" {
 }
 
 
-data "google_compute_image" "centos_7" {
+
+data "google_compute_image" "debian" {
   family  = var.instance_info.image_family
   project = var.instance_info.image_project
 }
 
-resource "google_service_account" "http-sa" {
-  account_id   = "http-servers-sa"
-  display_name = "HTTP Servers Service Account"
-}
+
 
 resource "google_compute_network" "terraform-network" {
     name = "terraform-network"
 }
+
+
+
+resource "google_compute_firewall" "ssh-rule" {
+  name = "terraform-ssh"
+  network = google_compute_network.terraform-network.name
+  allow {
+    protocol = "tcp"
+    ports = ["22"]
+  }
+  target_tags = ["allow-ssh"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
+
+
+resource "google_compute_firewall" "http-rule" {
+  name = "terraform-http"
+  network = google_compute_network.terraform-network.name
+  allow {
+    protocol = "tcp"
+    ports = ["80"]
+  }
+  target_tags = ["allow-http"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
 
 
 resource "google_compute_autoscaler" "terraform-autoscaler" {
@@ -36,25 +61,19 @@ resource "google_compute_autoscaler" "terraform-autoscaler" {
 }
 
 
+
 resource "google_compute_instance_template" "terraform-instance-template" {
     name = "terraform-instance-template"
     machine_type = var.instance_info.machine_type
     can_ip_forward = false
     project = var.gcp_info.project
-    tags = var.instance_info.tags
+    tags = var.instance_tags
     disk {
-      source_image = data.google_compute_image.centos_7.self_link
+      source_image = data.google_compute_image.debian.self_link
     }
     network_interface {
       network = google_compute_network.terraform-network.name
       access_config {}
-    }
-    metadata = {
-        foo = var.instance_info.metadata_foo
-    }
-    service_account {
-      email = google_service_account.http-sa.email
-      scopes = [cloud-platform]
     }
     metadata_startup_script = <<EOF
         sudo apt update
@@ -65,12 +84,6 @@ resource "google_compute_instance_template" "terraform-instance-template" {
 }
 
 
-resource "google_compute_target_pool" "terraform-tp" {
-  name = "terraform-tp"
-  project = var.gcp_info.project
-  region = var.gcp_info.region
-}
-
 
 resource "google_compute_instance_group_manager" "terraform-gm" {
     name = "terraform-gm"
@@ -80,17 +93,18 @@ resource "google_compute_instance_group_manager" "terraform-gm" {
       instance_template = google_compute_instance_template.terraform-instance-template.self_link
       name = "primary"
     }
-    target_pools = [google_compute_target_pool.terraform-tp.self_link]
+    target_pools = [module.lb.target_pool]
     base_instance_name = "terraform"
 }
 
 
+#Load balancer
 module "lb" {
-  source = var.lb_info.source
-  version = var.lb_info.version
+  source = "GoogleCloudPlatform/lb/google"
+  version = "2.2.0"
   region = var.gcp_info.region
   name = "terraform-lb"
-  service_port = var.lb_info.service_port
-  target_tags = var.lb_info.target_tags
+  service_port = var.lb_port
+  target_tags = var.lb_tags
   network = google_compute_network.terraform-network.name
 }

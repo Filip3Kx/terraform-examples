@@ -1,7 +1,7 @@
 variable "gcp_info" {
   type = map
   default = {
-    project = "using-terraf-159-09806784"
+    project = "caramel-compass-393820"
     region = "europe-west1"
     zone = "europe-west1-b"
 
@@ -11,11 +11,14 @@ variable "instance_info" {
   type = map
   default = {
     machine_type = "n1-standard-1"
-    tags = ["foo", "bar", "allow-lb-service"]
-    image_family = "centos-7"
-    image_project = "centos-cloud"
-    metadata_foo = "bar"
+    image_family = "debian-11"
+    image_project = "debian-cloud"
   }
+}
+variable "instance_tags" {
+  type = list(string)
+  default = ["allow-ssh", "allow-http", "terraform-tp"]
+  
 }
 variable "autoscaler_info" {
   type = map
@@ -27,12 +30,11 @@ variable "autoscaler_info" {
   }  
 }
 
-variable "lb_info" {
-  type = map
-  default = {
-    source = "GoogleCloudPlatform/lb/google"
-    version="2.2.0"
-    target_tags=["terraform-tp"]
-    service_port = 80
-  }
+variable "lb_tags" {
+  type = list(string)
+  default = ["terraform-tp"]
+}
+variable "lb_port" {
+    type = number
+    default = 80
 }
