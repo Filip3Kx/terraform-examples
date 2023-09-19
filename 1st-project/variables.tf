@@ -11,7 +11,7 @@ variable "instance_info" {
   type = map
   default = {
     machine_type = "n1-standard-1"
-    tags = ["allow-http", "allow-https", "allow-lb-service"]
+    tags = ["foo", "bar", "allow-lb-service"]
     image_family = "centos-7"
     image_project = "centos-cloud"
     metadata_foo = "bar"
